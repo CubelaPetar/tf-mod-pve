@@ -1,15 +1,3 @@
-variable "vm_tags-00" {
-    type = list(string)
-}
-
-variable "vm_tags-01" {
-    type = list(string)
-}
-
-#variable "vm_tags-02" {
-#    type = list(string)
-#}
-
 variable "pve_host" {
   type = string
   description = "Proxmox Virtual Environment Host"
@@ -38,6 +26,7 @@ variable "vm_information" {
     nameserver      = string
     ipconfig0       = string
     state           = string
+    tags            = list(string)
   }))
   default = [
     {
@@ -49,6 +38,7 @@ variable "vm_information" {
       nameserver    = ""
       ipconfig0     = "ip=dhcp,ip6=auto"
       state         = "running"
+      tags          = [ "inbox" ]  
     }
   ]
   description       = "All VM information"

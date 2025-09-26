@@ -88,8 +88,7 @@ resource "proxmox_vm_qemu" "vms" {
 
     onboot = true
     boot = "order=scsi0"
-  #tags = "ldap,samba,kerberos,dns,pki"
-    tags = "${var.vm_tags}-${count.index}"
+    tags = var.vm_information[count.index].tags
 
     # Setup the ip address using cloud-init.
     # Keep in mind to use the CIDR notation for the ip.
