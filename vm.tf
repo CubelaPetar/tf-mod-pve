@@ -81,10 +81,10 @@ resource "proxmox_vm_qemu" "vms" {
     network {
         id        = 0
         model     = "virtio"
-        bridge    = var.var.vm_information[count.index].bridge
-        macaddr   = var.var.vm_information[count.index].macaddr
+        bridge    = var.vm_information[count.index].bridge
+        macaddr   = var.vm_information[count.index].macaddr
     }
-    nameserver = var.var.vm_information[count.index].nameserver
+    nameserver = var.vm_information[count.index].nameserver
 
     onboot = true
     boot = "order=scsi0"
@@ -93,8 +93,8 @@ resource "proxmox_vm_qemu" "vms" {
     # Setup the ip address using cloud-init.
     # Keep in mind to use the CIDR notation for the ip.
     #ipconfig0   = "ip=10.11.12.65/24,gw=10.11.12.254"
-    ipconfig0   = var.var.vm_information[count.index].ipconfig0
-    ciuser      = var.prov_user
+    ipconfig0   = var.vm_information[count.index].ipconfig0
+    ciuser      = var.pve_prov_user # does not has to be the same as pve prov user
     cicustom    = "user=local:snippets/user_data_vm-${count.index}.yml" 
     ciupgrade   = true
 
