@@ -25,7 +25,7 @@ resource "null_resource" "cloud_init_config_files" {
 
 resource "proxmox_vm_qemu" "vms" {
     count       = var.pve_vm_count
-    name        = var.vm_hostnames[count.index]
+    name        = var.vm_information[count.index].hostname
 
     depends_on = [
       null_resource.cloud_init_config_files
@@ -36,7 +36,7 @@ resource "proxmox_vm_qemu" "vms" {
     target_node = var.pve_host
 
     # The template name to clone this vm from
-    clone = var.pve_temp_name
+    clone = var.vm_information[count.index].template_name
 
     # Activate QEMU agent for this VM
     agent = 1
@@ -45,7 +45,7 @@ resource "proxmox_vm_qemu" "vms" {
 
     os_type = "cloud-init"
     vmid = "${var.base_vmid}" + "${count.index}"
-    vm_state = "running"
+    vm_state = var.vm_information[count.index].state
     
     cpu {
         cores = 2
@@ -79,12 +79,12 @@ resource "proxmox_vm_qemu" "vms" {
     # Setup the network interface and assign a vlan tag: 256
 
     network {
-        id = 0
-        model = "virtio"
-        bridge = var.vm_bridge[count.index]
-        macaddr   = var.vm_macaddr[count.index]
+        id        = 0
+        model     = "virtio"
+        bridge    = var.var.vm_information[count.index].bridge
+        macaddr   = var.var.vm_information[count.index].macaddr
     }
-    nameserver = var.vm_nameserver[count.index]
+    nameserver = var.var.vm_information[count.index].nameserver
 
     onboot = true
     boot = "order=scsi0"
@@ -94,7 +94,7 @@ resource "proxmox_vm_qemu" "vms" {
     # Setup the ip address using cloud-init.
     # Keep in mind to use the CIDR notation for the ip.
     #ipconfig0   = "ip=10.11.12.65/24,gw=10.11.12.254"
-    ipconfig0   = var.vm_ipconfig0[count.index]
+    ipconfig0   = var.var.vm_information[count.index].ipconfig0
     ciuser      = var.prov_user
     cicustom    = "user=local:snippets/user_data_vm-${count.index}.yml" 
     ciupgrade   = true
