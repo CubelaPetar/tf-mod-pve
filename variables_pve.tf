@@ -25,7 +25,7 @@ variable "pve_prov_user" {
 }
 
 variable "pve_vm_count" {
-  type = string
+  type = number
 }
 
 variable "vm_information" {
