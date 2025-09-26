@@ -36,6 +36,10 @@ variable "vm_information" {
   default = [
     {
       template_name = "temp-fedora-38"
+      hostname      = "default_hostname"
+      bridge        = "vmbr1"
+      macaddr       = ""
+      nameserver    = ""
       ipconfig0     = "ip=dhcp,ip6=auto"
       state         = "running"
     }
