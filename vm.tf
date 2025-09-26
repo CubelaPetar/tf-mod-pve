@@ -2,7 +2,7 @@
 resource "local_file" "cloud_init_user_data_file" {
   count     = var.pve_vm_count
   #content   = templatefile("${var.working_directory}/cloud-inits/cloud_init_fedora42_ipa_clients.cloud_config.tftpl", { ssh_key = var.ssh_public_key, hostname = var.hostname_vms[0] , domain = var.domain })
-  content   = templatefile("${path.module}/cloud-inits/cloud-init_gen.cloud_config.tftpl", { ssh_key = var.ssh_public_key, hostname = var.vm_hostnames[cound.index] , domain = var.domain })
+  content   = templatefile("${path.module}/cloud-inits/cloud-init_gen.cloud_config.tftpl", { ssh_key = var.ssh_public_key, hostname = var.vm_information[cound.index].hostname , domain = var.zone[0] })
   filename  = "${path.module}/files/user_data_vm-${count.index}.cfg"
 }
 
@@ -33,7 +33,7 @@ resource "proxmox_vm_qemu" "vms" {
 
     # Node name has to be the same name as within the cluster
     # this might not include the FQDN
-    target_node = var.pve_host
+    target_node = var.pve_hostname
 
     # The template name to clone this vm from
     clone = var.vm_information[count.index].template_name

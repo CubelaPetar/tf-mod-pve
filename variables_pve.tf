@@ -15,6 +15,11 @@ variable "pve_host" {
   description = "Proxmox Virtual Environment Host"
 }
 
+variable "pve_hostname" {
+  type = string
+  description = "Proxmox Virtual Environment Node Hostname"
+}
+
 variable "pve_prov_user" {
   type = string
 }
@@ -53,7 +58,7 @@ variable "base_vmid" {
     description = "Base VMID + vm_endex = VMID"
 }
 
-variable "public_ssh_key" {
+variable "ssh_public_key" {
   type = string 
   sensitive = true
 }
