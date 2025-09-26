@@ -32,6 +32,7 @@ variable "vm_information" {
   type = list(object({
     template_name   = string
     hostname        = string
+    domain          = string
     bridge          = string
     macaddr         = string
     nameserver      = string
@@ -42,6 +43,7 @@ variable "vm_information" {
     {
       template_name = "temp-fedora-38"
       hostname      = "default_hostname"
+      domain        = "example.com"
       bridge        = "vmbr1"
       macaddr       = ""
       nameserver    = ""
