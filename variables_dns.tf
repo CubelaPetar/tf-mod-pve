@@ -4,6 +4,10 @@ variable "tsig-key" {
   sensitive = true
 } 
 
+variable "dns_server" {
+  type = string
+}
+
 variable "zones" {
   type = list(string)
 }
