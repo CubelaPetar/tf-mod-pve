@@ -26,7 +26,7 @@ variable "vm_information" {
     nameserver      = string
     ipconfig0       = string
     state           = string
-    tags            = list(string)
+    tags            = string
   }))
   default = [
     {
@@ -38,7 +38,7 @@ variable "vm_information" {
       nameserver    = ""
       ipconfig0     = "ip=dhcp,ip6=auto"
       state         = "running"
-      tags          = [ "inbox" ]  
+      tags          = "inbox" 
     }
   ]
   description       = "All VM information"
