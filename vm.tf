@@ -2,7 +2,7 @@
 resource "local_file" "cloud_init_user_data_file" {
   count     = var.pve_vm_count
   #content   = templatefile("${var.working_directory}/cloud-inits/cloud_init_fedora42_ipa_clients.cloud_config.tftpl", { ssh_key = var.ssh_public_key, hostname = var.hostname_vms[0] , domain = var.domain })
-  content   = templatefile("${path.module}/cloud-inits/cloud-init_gen.cloud_config.tftpl", { ssh_key = var.ssh_public_key, hostname = var.vm_information[count.index].hostname , domain = var.vm_information[cound.index].domain })
+  content   = templatefile("${path.module}/cloud-inits/cloud-init_gen.cloud_config.tftpl", { ssh_key = var.ssh_public_key, hostname = var.vm_information[count.index].hostname , domain = var.vm_information[count.index].domain })
   filename  = "${path.module}/files/user_data_vm-${count.index}.cfg"
 }
 
