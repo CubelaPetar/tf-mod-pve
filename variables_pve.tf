@@ -27,6 +27,12 @@ variable "vm_information" {
     ipconfig0       = string
     state           = string
     tags            = string
+    agent           = number
+    cpu_cores       = number
+    cpu_sockets     = number
+    cpu_type        = string
+    memory          = number
+    scsihw          = string
   }))
   default = [
     {
@@ -38,7 +44,13 @@ variable "vm_information" {
       nameserver    = ""
       ipconfig0     = "ip=dhcp,ip6=auto"
       state         = "running"
-      tags          = "inbox" 
+      tags          = "inbox"
+      agent         = 1
+      cpu_cores     = 2
+      cpu_sockets   = 1
+      cpu_type      = "host"
+      memory        = 2048
+      scsihw        = "virtio-scsi-pci"
     }
   ]
   description       = "All VM information"
