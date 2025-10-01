@@ -10,8 +10,6 @@ terraform {
 
 # Create a local copy of the file, to transfer to Proxmox
 resource "local_file" "cloud_init_user_data_file" {
-  ##count     = var.pve_vm_count
-  #content   = templatefile("${var.working_directory}/cloud-inits/cloud_init_fedora42_ipa_clients.cloud_config.tftpl", { ssh_key = var.ssh_public_key, hostname = var.hostname_vms[0] , domain = var.domain })
   content   = templatefile("${path.module}/cloud-inits/cloud-init_gen.cloud_config.tftpl", { ssh_key = var.ssh_public_key, hostname = var.hostname , domain = var.domain })
   filename  = "${path.module}/files/user_data_vm-${var.hostname}.cfg"
 }
@@ -98,7 +96,6 @@ resource "proxmox_vm_qemu" "vm" {
     nameserver = var.nameserver
 
     onboot = true
-  #boot = "order=scsi0"
     boot = var.boot
     tags = var.tags
 
