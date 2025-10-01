@@ -59,7 +59,7 @@ export ssh_keyfile="$HOME/.ssh/id_ed25519.pub"
 export username=admin
 
 #Name of your storage
-export storage=local-lvm
+export storage=local-zfs
 
 #The images that I've found premade
 #Feel free to add your own

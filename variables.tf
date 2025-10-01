@@ -1,3 +1,18 @@
+variable "proxmox_api_url" {
+    type = string
+}
+
+variable "proxmox_api_token_id" {
+    type = string
+    sensitive = true
+}
+
+variable "proxmox_api_token_secret" {
+    type = string
+    sensitive = true
+}
+
+
 variable "pve_host" {
   type = string
   description = "Proxmox Virtual Environment Host"
@@ -10,50 +25,125 @@ variable "pve_hostname" {
 
 variable "pve_prov_user" {
   type = string
+  description = "User on PVE having permissions to access /var/lib/vz/snippets"
 }
 
-variable "pve_vm_count" {
+## deprecated
+#variable "pve_vm_count" {
+#  type = number
+#
+#}
+
+variable "vm_id" {
+  type = number 
+  description = "Index for the VM such that the vmid = base_vmid + vm_id"
+}
+
+variable "template_name" {
+  type = string
+  description = "Name of the used template. Has to be created with ./scripts/create_template.sh"
+}
+
+variable "hostname" {
+  type = string
+  description = "Hostname of the VM"
+}
+
+variable "domain" {
+  type = string
+  description = "Domain of the VM"
+}
+
+variable "net_id" {
+  type = number
+  description = "network id?"
+  default = 0
+}
+
+variable "net_model" {
+  type = string 
+  default = "virtio"
+}
+
+variable "net_bridge" {
+  type = string
+  description = "Network bridge interface"
+}
+
+variable "net_macaddr" {
+  type = string
+  description = "VMs mac address"
+}
+
+#variable "cpu" {
+#  type = object({
+#    cpu_type = string
+#    cpu_cores = number 
+#    cpu_sockets = number
+#  })
+#  default = {
+#    cpu_type = "host"
+#    cpu_cores = 2
+#    cpu_sockets = 1
+#  }
+#  description = "CPU config of VM"
+#}
+
+variable "cpu_type" {
+  type        = string
+  description = "Type of CPU"
+  default     = "host"
+}
+
+variable "cpu_cores" {
+  type        = number
+  description = "Number uf cores" 
+  default     = 2
+}
+
+variable "cpu_sockets" {
+  type        = number
+  description = "Number of CPU sockets"
+  default     = 1
+}
+
+variable "nameserver" {
+  type = string
+}
+
+variable "ipconfig0" {
+  type = string
+}
+
+variable "state" {
+  type = string
+} 
+
+variable "tags" {
+  type = string
+}
+
+variable "agent" {
+  type = number
+  description = "Should qemu agent be enabled in pve"
+  default = 1
+}
+
+variable "boot" {
+  type = string
+  description = "Boot options"
+}
+
+variable "memory" {
   type = number
 }
 
-variable "vm_information" {
-  type = list(object({
-    template_name   = string
-    hostname        = string
-    domain          = string
-    bridge          = string
-    macaddr         = string
-    nameserver      = string
-    ipconfig0       = string
-    state           = string
-    tags            = string
-    agent           = number
-    cpu_cores       = number
-    cpu_sockets     = number
-    cpu_type        = string
-    memory          = number
-    scsihw          = string
-  }))
-  default = [
-    {
-      template_name = "temp-fedora-38"
-      hostname      = "default_hostname"
-      domain        = "example.com"
-      bridge        = "vmbr1"
-      macaddr       = ""
-      nameserver    = ""
-      ipconfig0     = "ip=dhcp,ip6=auto"
-      state         = "running"
-      tags          = "inbox"
-      agent         = 1
-      cpu_cores     = 2
-      cpu_sockets   = 1
-      cpu_type      = "host"
-      memory        = 2048
-      scsihw        = "virtio-scsi-pci"
-    }
-  ]
-  description       = "All VM information"
+variable "scsihw" {
+  type = string
+}
+
+variable "storage" {
+  type = string
 }
 
 
@@ -72,6 +162,3 @@ variable "ssh_private_key" {
   sensitive = true
 }
 
-#variable "working_directory" {
-#  type = string
-#}
