@@ -1,6 +1,6 @@
-# PVE deploy VM
+# TF-Mod-PVE
 
-This modules creates a VM on a proxmox host with the provided variables using cloud-init and a before provided template.
+Terraform/OpenTofu module to create VMs via cloud-init on a Proxmox Virtual Environement host.
 
 Before using this module the templates one whishes to use have to be created on the pve host. 
 This can be achieved using the bash [script](./scripts/create_template.sh). 
@@ -84,3 +84,9 @@ variable "vm" {
   }))
 }  
 ```
+
+## Dependancies
+
+This module has a dependency on the ```e-breuninger/netbox``` provider.
+
+
