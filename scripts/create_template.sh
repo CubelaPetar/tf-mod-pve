@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# This script is written by apalrd. 
+# Original Source: https://www.apalrd.net/posts/2023/pve_cloud/
+
+
 #Create template
 #args:
 # vm_id
