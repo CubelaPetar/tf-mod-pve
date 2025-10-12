@@ -123,3 +123,10 @@ create_template 922 "temp-fedora-38" "Fedora-Cloud-Base-Generic-42-1.1.x86_64.qc
 #wget "https://download.freebsd.org/releases/VM-IMAGES/14.2-RELEASE/amd64/Latest/FreeBSD-14.2-RELEASE-amd64-BASIC-CLOUDINIT.ufs.qcow2.xz"
 #xz -d -v "FreeBSD-14.2-RELEASE-amd64-BASIC-CLOUDINIT.ufs.qcow2.xz"
 #create_template 960 "temp-freebsd-14.2" "FreeBSD-14.2-RELEASE-amd64-BASIC-CLOUDINIT.ufs.qcow2"
+
+
+## OpenBSD
+# OpenBSD 7.7 
+# Unofficial image from https://bsd-cloud-image.org
+# wget "https://github.com/hcartiaux/openbsd-cloud-image/releases/download/v7.7_2025-04-28-11-38/openbsd-min.qcow2"
+#create_template 980 "temp-openbsd-7.7" "openbsd-min.qcow2"
