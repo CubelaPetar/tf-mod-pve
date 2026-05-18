@@ -25,6 +25,7 @@ module "pve_vms" {
   memory                    = each.value.memory 
   scsihw                    = each.value.scsihw
   storage                   = each.value.storage  
+  disk_size                 = each.value.disk_size  
   boot                      = each.value.boot
 
   net_id                    = each.value.net.id
@@ -74,6 +75,7 @@ variable "vm" {
     tags            = string 
     memory          = number 
     scsihw          = string
+    disk_size       = string
     boot            = string
     storage         = string
     cpu             = object({

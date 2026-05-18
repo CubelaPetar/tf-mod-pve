@@ -146,6 +146,10 @@ variable "storage" {
   type = string
 }
 
+variable "disk_size" {
+  type = string
+}
+
 
 variable "base_vmid" {
     type = string
