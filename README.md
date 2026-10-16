@@ -47,7 +47,7 @@ provider "proxmox" {
 }
 
 module "web01" {
-  source = "git::https://github.com/CubelaPetar/tofu-module_deploy-pve-vm.git"
+  source = "git::https://github.com/CubelaPetar/tf-mod-pve.git"
 
   # Proxmox access
   pve_host        = "192.168.1.10"  # SSH target for the snippet upload
