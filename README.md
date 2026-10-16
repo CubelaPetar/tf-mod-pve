@@ -1,94 +1,110 @@
-# TF-Mod-PVE
+# tf-mod-pve
 
-Terraform/OpenTofu module to create VMs via cloud-init on a Proxmox Virtual Environement host.
+OpenTofu/Terraform module that creates one VM on a Proxmox VE node by cloning a cloud-init template.
 
-Before using this module the templates one whishes to use have to be created on the pve host. 
-This can be achieved using the bash [script](./scripts/create_template.sh). 
+For each VM the module:
 
-## Usage 
+1. Renders a cloud-init user-data file from `cloud-inits/cloud-init_gen.cloud_config.tftpl`.
+2. Copies it over SSH to `/var/lib/vz/snippets/` on the Proxmox host.
+3. Clones the template and attaches that file as cloud-init user data (`cicustom`).
 
-Use the module:
+The VM gets a user `admin` (passwordless sudo, your SSH key) and `qemu-guest-agent`. After the agent is running, `curl`, `vim`, `htop` and `bash-completion` are installed and the system is upgraded (apt or dnf).
 
-```terraform
-module "pve_vms" {
-  source                    = "./modules/pve_deploy_vms"
+## Requirements
 
-  for_each                  = var.vm
+- OpenTofu or Terraform.
+- Provider `telmate/proxmox` `3.0.2-rc04`, configured in your root module (the module does not configure it).
+- A Proxmox API token for the provider.
+- SSH access to the Proxmox host with a user that can write to `/var/lib/vz/snippets` (usually `root`).
+- The `local` storage must allow the content type **Snippets** (Datacenter → Storage → local → Content).
+- A cloud-init template on the node (see below).
 
-  hostname                  = each.key
-  template_name             = each.value.template_name
-  domain                    = each.value.domain
-  nameserver                = each.value.nameserver 
-  ipconfig0                 = each.value.ipconfig0 
-  state                     = each.value.state 
-  tags                      = each.value.tags 
-  memory                    = each.value.memory 
-  scsihw                    = each.value.scsihw
-  storage                   = each.value.storage  
-  disk_size                 = each.value.disk_size  
-  boot                      = each.value.boot
+## 1. Create templates
 
-  net_id                    = each.value.net.id
-  net_model                 = each.value.net.model
-  net_bridge                = each.value.net.bridge
-  net_macaddr               = each.value.net.macaddr
+Run [`scripts/create_template.sh`](./scripts/create_template.sh) as root on the Proxmox host. Before running it:
 
-  cpu_type                  = each.value.cpu.type
-  cpu_cores                 = each.value.cpu.cores
-  cpu_sockets               = each.value.cpu.sockets
- 
-  # general
-  pve_host                  = var.pve_host
-  pve_hostname              = var.pve_hostname
-  pve_prov_user             = var.pve_prov_user
+- Set `ssh_keyfile`, `username` and `storage` near the bottom of the script.
+- Comment in/out the images you want. Each one becomes a template with a fixed VMID and name, e.g. `902` / `temp-debian-12`.
 
-  proxmox_api_url           = var.proxmox_api_url
-  proxmox_api_token_id      = var.proxmox_api_token_id
-  proxmox_api_token_secret  = var.proxmox_api_token_secret
+The script fails for templates whose VMID already exists.
 
-  base_vmid                 = var.base_vmid
-  vm_id                     = each.value.vm_id
+## 2. Use the module
 
-  ssh_public_key            = var.ssh_public_key
-  ssh_private_key           = var.ssh_private_key
+```hcl
+terraform {
+  required_providers {
+    proxmox = {
+      source  = "telmate/proxmox"
+      version = "3.0.2-rc04"
+    }
+  }
+}
 
+provider "proxmox" {
+  pm_api_url          = var.proxmox_api_url          # e.g. https://pve.example.com:8006/api2/json
+  pm_api_token_id     = var.proxmox_api_token_id     # e.g. terraform@pve!tofu
+  pm_api_token_secret = var.proxmox_api_token_secret
+}
+
+module "web01" {
+  source = "git::https://github.com/CubelaPetar/tofu-module_deploy-pve-vm.git"
+
+  # Proxmox access
+  pve_host        = "192.168.1.10"  # SSH target for the snippet upload
+  pve_hostname    = "pve"           # node name as shown in the cluster
+  pve_prov_user   = "root"
+  ssh_public_key  = file("~/.ssh/id_ed25519.pub")
+  ssh_private_key = file("~/.ssh/id_ed25519")
+
+  # VM
+  hostname      = "web01"
+  domain        = "example.com"
+  template_name = "temp-debian-12"
+  base_vmid     = 1000
+  vm_id         = 1               # VMID = 1001
+  state         = "running"
+  tags          = "web;debian"
+  boot          = "order=scsi0"
+
+  cpu_cores = 2
+  memory    = 2048
+  scsihw    = "virtio-scsi-pci"
+  storage   = "local-zfs"
+  disk_size = "16G"               # must be >= the template disk
+
+  # Network
+  net_bridge  = "vmbr0"
+  net_macaddr = "BC:24:11:00:00:01"                  # optional
+  ipconfig0   = "ip=192.168.1.51/24,gw=192.168.1.1"  # or "ip=dhcp"
+  nameserver  = "192.168.1.1"
 }
 ```
 
-Required variable definitions
+To create several VMs, use `for_each` over a map of VM settings.
 
-```terraform
-variable "vm" {
-  type = map(object({
-    vm_id           = number
-    template_name   = string
-    domain          = string 
-    net             = object({
-      id          = number 
-      model       = string
-      bridge      = string 
-      macaddr     = string
-    })
-    nameserver      = string 
-    ipconfig0       = string 
-    state           = string 
-    tags            = string 
-    memory          = number 
-    scsihw          = string
-    disk_size       = string
-    boot            = string
-    storage         = string
-    cpu             = object({
-      type    = string
-      cores   = number
-      sockets = number
-    })
-  }))
-}  
-```
+## Inputs
 
-## Dependancies
-
-This module has a dependency on the ```e-breuninger/netbox``` provider.
-
-
+| Name | Default | Description |
+|---|---|---|
+| `pve_host` | – | Address used to SSH into the Proxmox host |
+| `pve_hostname` | – | Proxmox node name (`target_node`) |
+| `pve_prov_user` | – | SSH user on the Proxmox host |
+| `ssh_public_key` | – | Public key added to the VM user `admin` |
+| `ssh_private_key` | – | Private key used to SSH into the Proxmox host |
+| `hostname`, `domain` | – | VM hostname and domain (FQDN = `hostname.domain`) |
+| `template_name` | – | Template to clone |
+| `base_vmid`, `vm_id` | – | VMID = `base_vmid + vm_id` |
+| `state` | – | `running` or `stopped` |
+| `tags` | – | Proxmox tags, separated by `;` |
+| `boot` | – | Boot order, e.g. `order=scsi0` |
+| `cpu_type` / `cpu_cores` / `cpu_sockets` | `host` / `2` / `1` | CPU |
+| `memory` | – | RAM in MB |
+| `scsihw` | – | SCSI controller, e.g. `virtio-scsi-pci` |
+| `storage` | – | Storage for the disk and the cloud-init drive |
+| `disk_size` | – | Disk size, e.g. `16G` |
+| `net_id` / `net_model` | `0` / `virtio` | Network device |
+| `net_bridge` | – | Bridge, e.g. `vmbr0` |
+| `net_macaddr` | `null` | MAC address of the NIC (uppercase). `null` lets Proxmox generate one |
+| `ipconfig0` | – | Cloud-init IP config, e.g. `ip=dhcp` |
+| `nameserver` | – | DNS server |
+| `agent` | `1` | Enable the QEMU guest agent option in Proxmox |

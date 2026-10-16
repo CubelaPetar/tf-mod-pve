@@ -1,18 +1,3 @@
-variable "proxmox_api_url" {
-    type = string
-}
-
-variable "proxmox_api_token_id" {
-    type = string
-    sensitive = true
-}
-
-variable "proxmox_api_token_secret" {
-    type = string
-    sensitive = true
-}
-
-
 variable "pve_host" {
   type = string
   description = "Proxmox Virtual Environment Host"
@@ -72,7 +57,8 @@ variable "net_bridge" {
 
 variable "net_macaddr" {
   type = string
-  description = "VMs mac address"
+  description = "VMs mac address. Null lets Proxmox generate one"
+  default = null
 }
 
 #variable "cpu" {

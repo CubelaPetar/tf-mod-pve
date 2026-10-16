@@ -43,8 +43,8 @@ function create_template() {
     #qm set $1 --cipassword password
     #Add the user
     qm set "$1" --ciuser "${username}"
-    #Resize the disk to 8G, a reasonable minimum. You can expand it more later.
-    #If the disk is already bigger than 8G, this will fail, and that is okay.
+    #Resize the disk to 16G, a reasonable minimum. You can expand it more later.
+    #If the disk is already bigger than 16G, this will fail, and that is okay.
     qm disk resize "$1" scsi0 16G
     #Make it a template
     qm template "$1"
@@ -98,10 +98,10 @@ create_template 912 "temp-ubuntu-24-04" "ubuntu-24.04-server-cloudimg-amd64.img"
 
 ## Fedora 41
 #wget https://mirror.accum.se/mirror/fedora/linux/releases/41/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-41-1.4.x86_64.qcow2
-#create_template 921 "temp-fedora-37" "Fedora-Cloud-Base-Generic-41-1.4.x86_64.qcow2"
+#create_template 921 "temp-fedora-41" "Fedora-Cloud-Base-Generic-41-1.4.x86_64.qcow2"
 ## Fedora 42
 wget https://mirror.accum.se/mirror/fedora/linux/releases/42/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2
-create_template 922 "temp-fedora-38" "Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2"
+create_template 922 "temp-fedora-42" "Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2"
 
 ## Rocky Linux
 #Rocky 8 latest

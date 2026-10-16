@@ -17,6 +17,11 @@ resource "local_file" "cloud_init_user_data_file" {
 
 # Transfer the file to the Proxmox Host
 resource "null_resource" "cloud_init_config_file" {
+  # Re-upload when the rendered user data changes
+  triggers = {
+    user_data = sha256(local_file.cloud_init_user_data_file.content)
+  }
+
   connection {
     type          = "ssh"
     user          = var.pve_prov_user
@@ -103,9 +108,6 @@ resource "proxmox_vm_qemu" "vm" {
     # Keep in mind to use the CIDR notation for the ip.
     #ipconfig0   = "ip=10.11.12.65/24,gw=10.11.12.254"
     ipconfig0   = var.ipconfig0
-    ciuser      = var.pve_prov_user
+    # User, SSH key and packages come from this snippet; Proxmox ignores ciuser/sshkeys/ciupgrade when it is set
     cicustom    = "user=local:snippets/user_data_vm-${var.hostname}.yml" 
-    ciupgrade   = true
-
-    sshkeys     = var.ssh_public_key
 }

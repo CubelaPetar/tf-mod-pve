@@ -1,14 +1,12 @@
 #cloud-config
 
+# Only the guest agent is installed by the packages module, so a failing
+# extra package or a slow upgrade cannot block it.
 package_update: true
-package_upgrade: true
+package_upgrade: false
 
 packages:
   - qemu-guest-agent
-  - curl
-  - vim
-  - htop 
-  - bash-completion
 
 users:
 - name: admin
@@ -26,5 +24,5 @@ prefer_fqdn_over_hostname: true
 create_hostname_file: true
 
 runcmd:
-  - systemctl start qemu-guest-agent
   - systemctl enable --now qemu-guest-agent
+  - if command -v apt-get >/dev/null; then DEBIAN_FRONTEND=noninteractive apt-get install -y curl vim htop bash-completion; DEBIAN_FRONTEND=noninteractive apt-get upgrade -y; elif command -v dnf >/dev/null; then dnf install -y curl vim htop bash-completion; dnf upgrade -y; fi
