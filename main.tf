@@ -1,113 +1,90 @@
-
 terraform {
   required_providers {
     proxmox = {
-      source    = "telmate/proxmox"
-      version   = "3.0.2-rc04"
+      source  = "bpg/proxmox"
+      version = ">= 0.118.0"
     }
   }
 }
 
-# Create a local copy of the file, to transfer to Proxmox
-resource "local_file" "cloud_init_user_data_file" {
-  content   = templatefile("${path.module}/cloud-inits/cloud-init_gen.cloud_config.tftpl", { ssh_key = var.ssh_public_key, hostname = var.hostname , domain = var.domain })
-  filename  = "${path.module}/files/user_data_vm-${var.hostname}.cfg"
-}
+# Upload the rendered cloud-init user data as a snippet (the provider uses SSH for this)
+resource "proxmox_virtual_environment_file" "user_data" {
+  content_type = "snippets"
+  datastore_id = var.snippets_datastore
+  node_name    = var.node_name
 
-
-# Transfer the file to the Proxmox Host
-resource "null_resource" "cloud_init_config_file" {
-  # Re-upload when the rendered user data changes
-  triggers = {
-    user_data = sha256(local_file.cloud_init_user_data_file.content)
-  }
-
-  connection {
-    type          = "ssh"
-    user          = var.pve_prov_user
-    private_key   = var.ssh_private_key
-    host          = var.pve_host
-  }
-
-  provisioner "file" {
-    source        = local_file.cloud_init_user_data_file.filename
-    destination   = "/var/lib/vz/snippets/user_data_vm-${var.hostname}.yml"
+  source_raw {
+    data      = templatefile("${path.module}/cloud-inits/cloud-init_gen.cloud_config.tftpl", { ssh_key = var.ssh_public_key, hostname = var.hostname, domain = var.domain })
+    file_name = "user_data_vm-${var.hostname}.yml"
   }
 }
 
 
-resource "proxmox_vm_qemu" "vm" {
-    name        = var.hostname
+resource "proxmox_virtual_environment_vm" "vm" {
+  name      = var.hostname
+  node_name = var.node_name
+  vm_id     = var.vm_id
+  tags      = sort(var.tags)
 
-    depends_on = [
-      null_resource.cloud_init_config_file
-    ]
+  started = var.started
+  on_boot = var.on_boot
 
-    # Node name has to be the same name as within the cluster
-    # this might not include the FQDN
-    target_node = var.pve_hostname
+  # Template to clone this vm from (created with ./scripts/create_template.sh)
+  clone {
+    vm_id = var.template_vm_id
+    full  = true
+  }
 
-    # The template name to clone this vm from
-    clone = var.template_name
+  agent {
+    enabled = var.agent
+  }
 
-    # Activate QEMU agent for this VM
-    agent = var.agent
+  cpu {
+    cores   = var.cpu_cores
+    sockets = var.cpu_sockets
+    type    = var.cpu_type
+  }
 
-    #pool = linux
-    os_type     = "cloud-init"
+  memory {
+    dedicated = var.memory
+  }
 
-    vmid        = "${var.base_vmid}" + "${var.vm_id}" 
+  scsi_hardware = var.scsihw
 
-    vm_state    = var.state
-    
-    cpu {
-          cores   = var.cpu_cores
-          sockets = var.cpu_sockets
-          type    = var.cpu_type
-    }
-    memory      = var.memory
-    scsihw      = var.scsihw
+  # The size has to be at least as big as the disk in the template
+  disk {
+    datastore_id = var.storage
+    interface    = "scsi0"
+    size         = var.disk_size
+  }
 
-    # Setup the disk
-    disks {
-      scsi {
-        scsi0 {
-          # We have to specify the disk from our template, else Terraform will think it's not supposed to be there
-          disk {
-            storage = var.storage
-            # The size of the disk should be at least as big as the disk in the template. If it's smaller, the disk will be recreated
-            size    = var.disk_size 
-          }
-        }
+  network_device {
+    bridge      = var.net_bridge
+    model       = var.net_model
+    mac_address = var.net_macaddr
+  }
+
+  operating_system {
+    type = "l26"
+  }
+
+  initialization {
+    datastore_id = var.storage
+
+    ip_config {
+      ipv4 {
+        # CIDR notation (e.g. 10.0.0.10/24) or "dhcp"
+        address = var.ip_address
+        gateway = var.gateway
       }
-      ide {
-        # Some images require a cloud-init disk on the IDE controller, others on the SCSI or SATA controller
-        ide1 {
-          cloudinit {
-            storage = var.storage
-          }
-        }
-      }
-    }    
-    # Setup the network interface and assign a vlan tag: 256
-
-    network {
-      id        = var.net_id
-      model     = var.net_model
-      bridge    = var.net_bridge
-      macaddr   = var.net_macaddr
     }
 
-    nameserver = var.nameserver
+    dns {
+      domain  = var.domain
+      servers = var.nameservers
+    }
 
-    onboot = true
-    boot = var.boot
-    tags = var.tags
-
-    # Setup the ip address using cloud-init.
-    # Keep in mind to use the CIDR notation for the ip.
-    #ipconfig0   = "ip=10.11.12.65/24,gw=10.11.12.254"
-    ipconfig0   = var.ipconfig0
-    # User, SSH key and packages come from this snippet; Proxmox ignores ciuser/sshkeys/ciupgrade when it is set
-    cicustom    = "user=local:snippets/user_data_vm-${var.hostname}.yml" 
+    # User, SSH key and packages come from this snippet
+    user_data_file_id = proxmox_virtual_environment_file.user_data.id
+  }
 }
