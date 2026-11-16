@@ -110,12 +110,25 @@ variable "net_macaddr" {
 
 variable "ip_address" {
   type        = string
-  description = "IPv4 address in CIDR notation or \"dhcp\""
+  description = "IPv4 address in CIDR notation or \"dhcp\". Null disables IPv4"
+  default     = null
 }
 
 variable "gateway" {
   type        = string
-  description = "IPv4 gateway. Null when ip_address is dhcp"
+  description = "IPv4 gateway. Null when ip_address is dhcp or null"
+  default     = null
+}
+
+variable "ipv6_address" {
+  type        = string
+  description = "IPv6 address in CIDR notation, \"auto\" (SLAAC) or \"dhcp\". Null disables IPv6 config"
+  default     = null
+}
+
+variable "ipv6_gateway" {
+  type        = string
+  description = "IPv6 gateway. Null when ipv6_address is auto, dhcp or null"
   default     = null
 }
 

@@ -72,10 +72,22 @@ resource "proxmox_virtual_environment_vm" "vm" {
     datastore_id = var.storage
 
     ip_config {
-      ipv4 {
-        # CIDR notation (e.g. 10.0.0.10/24) or "dhcp"
-        address = var.ip_address
-        gateway = var.gateway
+      # CIDR notation (e.g. 10.0.0.10/24) or "dhcp"; omitted when null
+      dynamic "ipv4" {
+        for_each = var.ip_address == null ? [] : [1]
+        content {
+          address = var.ip_address
+          gateway = var.gateway
+        }
+      }
+
+      # CIDR notation, "auto" (SLAAC) or "dhcp"; omitted when null
+      dynamic "ipv6" {
+        for_each = var.ipv6_address == null ? [] : [1]
+        content {
+          address = var.ipv6_address
+          gateway = var.ipv6_gateway
+        }
       }
     }
 

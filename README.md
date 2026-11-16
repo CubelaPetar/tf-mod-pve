@@ -57,7 +57,7 @@ provider "proxmox" {
 }
 
 module "web01" {
-  source = "git::https://github.com/CubelaPetar/tf-mod-pve.git?ref=v1.0.0"
+  source = "git::https://github.com/CubelaPetar/tf-mod-pve.git?ref=v1.1.0"
 
   node_name      = "pve"            # node name as shown in the cluster
   vm_id          = 1001
@@ -72,8 +72,9 @@ module "web01" {
   disk_size = 16                    # GB, must be >= the template disk
 
   net_bridge  = "vmbr0"
-  ip_address  = "192.168.1.51/24"   # or "dhcp"
+  ip_address  = "192.168.1.51/24"   # or "dhcp"; omit for IPv6-only
   gateway     = "192.168.1.1"
+  ipv6_address = "auto"             # SLAAC; or CIDR / "dhcp"; omit for IPv4-only
   nameservers = ["192.168.1.1"]
 }
 ```
@@ -100,7 +101,9 @@ To create several VMs, use `for_each` over a map of VM settings.
 | `net_bridge` | – | Bridge, e.g. `vmbr0` |
 | `net_model` | `virtio` | NIC model |
 | `net_macaddr` | `null` | MAC address of the NIC. `null` lets Proxmox generate one |
-| `ip_address` | – | IPv4 address in CIDR notation or `dhcp` |
+| `ip_address` | `null` | IPv4 address in CIDR notation or `dhcp`. `null` = no IPv4 |
 | `gateway` | `null` | IPv4 gateway |
+| `ipv6_address` | `null` | IPv6 address in CIDR notation, `auto` (SLAAC) or `dhcp`. `null` = no IPv6 config |
+| `ipv6_gateway` | `null` | IPv6 gateway |
 | `nameservers` | – | DNS servers |
 | `ssh_public_key` | – | Public key added to the VM user `admin` |
