@@ -102,6 +102,12 @@ variable "net_model" {
   default = "virtio"
 }
 
+variable "net_vlan_id" {
+  type        = number
+  description = "VLAN tag of the NIC (on a VLAN-aware bridge). Null = untagged"
+  default     = null
+}
+
 variable "net_macaddr" {
   type        = string
   description = "MAC address of the NIC. Null lets Proxmox generate one"

@@ -61,6 +61,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
   network_device {
     bridge      = var.net_bridge
     model       = var.net_model
+    vlan_id     = var.net_vlan_id
     mac_address = var.net_macaddr
   }
 

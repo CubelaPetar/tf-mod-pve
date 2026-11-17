@@ -57,7 +57,7 @@ provider "proxmox" {
 }
 
 module "web01" {
-  source = "git::https://github.com/CubelaPetar/tf-mod-pve.git?ref=v1.1.0"
+  source = "git::https://github.com/CubelaPetar/tf-mod-pve.git?ref=v1.2.0"
 
   node_name      = "pve"            # node name as shown in the cluster
   vm_id          = 1001
@@ -100,6 +100,7 @@ To create several VMs, use `for_each` over a map of VM settings.
 | `disk_size` | – | Disk size in GB |
 | `net_bridge` | – | Bridge, e.g. `vmbr0` |
 | `net_model` | `virtio` | NIC model |
+| `net_vlan_id` | `null` | VLAN tag of the NIC on a VLAN-aware bridge. `null` = untagged |
 | `net_macaddr` | `null` | MAC address of the NIC. `null` lets Proxmox generate one |
 | `ip_address` | `null` | IPv4 address in CIDR notation or `dhcp`. `null` = no IPv4 |
 | `gateway` | `null` | IPv4 gateway |
